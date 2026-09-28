@@ -1,1 +1,345 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kasvien Hoito – ADHD Focus</title>
+    <style>
+        :root {
+            --bg-color: #f4f7f4;
+            --card-bg: #ffffff;
+            --primary: #2e7d32;
+            --primary-hover: #1b5e20;
+            --accent: #81c784;
+            --text-color: #2c3e50;
+            --warning: #e67e22;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+
+        /* Top Bar Controls */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            cursor: pointer;
+            flex: 1;
+            text-align: center;
+            text-decoration: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-insight {
+            background-color: #f39c12;
+        }
+
+        .btn-secondary {
+            background-color: #78909c;
+        }
+
+        /* Focus Card */
+        .card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            text-align: center;
+            margin-bottom: 20px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .urgency-tag {
+            display: inline-block;
+            background-color: #ffe0b2;
+            color: #e65100;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .plant-title {
+            font-size: 1.8rem;
+            margin: 10px 0;
+            color: var(--primary);
+        }
+
+        .plant-task {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        /* Photo Comparison Placeholder */
+        .photo-comparison {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 15px 0;
+        }
+
+        .photo-box {
+            flex: 1;
+            background-color: #f0f0f0;
+            border-radius: 10px;
+            padding: 10px;
+            font-size: 0.8rem;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border: 1px dashed #ccc;
+        }
+
+        /* Timer Indicator */
+        .timer-display {
+            background: #e8f5e9;
+            color: var(--primary);
+            padding: 10px;
+            border-radius: 10px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        /* Action Buttons */
+        .action-btns {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .btn-done {
+            background-color: #4caf50;
+            font-size: 1.2rem;
+            padding: 16px;
+        }
+
+        .btn-skip {
+            background-color: #9e9e9e;
+        }
+
+        /* Audio Element hidden */
+        audio {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🌿 Kasvien Hoito</h1>
+
+    <!-- Yläpalkki: Fokus-musiikki & Insight Timer -->
+    <div class="top-bar">
+        <button class="btn" id="musicBtn" onclick="toggleMusic()">🎵 Aloita Fokus (5min)</button>
+        <a href="https://insighttimer.com/" target="_blank" class="btn btn-insight">🧘 Insight Timer</a>
+    </div>
+
+    <div id="timerDisplay" class="timer-display">⏱️ Fokus-aikaa jäljellä: <span id="timeRemaining">05:00</span></div>
+
+    <!-- Pääkortti: Vain YKSI kasvi kerrallaan -->
+    <div class="card" id="plantCard">
+        <div class="urgency-tag" id="urgencyTag">🔥 Eniten hoitoa vaativa</div>
+        <h2 class="plant-title" id="plantName">Ladataan...</h2>
+        <div class="plant-task" id="plantTask">Kastele noin 2 dl vettä</div>
+
+        <!-- Ennen & Nyt vertailualue -->
+        <div class="photo-comparison">
+            <div class="photo-box">
+                <b>Aiemmin:</b>
+                <span id="prevPhotoText">Ei kuvaa vielä</span>
+            </div>
+            <div class="photo-box">
+                <b>Nyt:</b>
+                <button style="margin-top:5px; font-size:0.75rem;" onclick="alert('Kuvan lisäys aktivoituu myöhemmin!')">📸 Lisää kuva</button>
+            </div>
+        </div>
+
+        <!-- Toimintanapit -->
+        <div class="action-btns">
+            <button class="btn btn-done" onclick="completeTask()">Tehty! 🌿</button>
+            <button class="btn btn-skip" onclick="skipTask()">Ohita tämä tältä erää ⏭️</button>
+        </div>
+    </div>
+
+    <!-- Kasvin lisäys / Hallinta -->
+    <div style="text-align: center; margin-top: 20px;">
+        <button class="btn btn-secondary" onclick="addSampleData()">+ Lisää esimerkkikasveja</button>
+    </div>
+</div>
+
+<!-- Taustamusiikki (Avoimen lisenssin Ambient Focus / Lo-Fi audio) -->
+<audio id="focusAudio" loop>
+    <source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=lofi-study-112191.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+    // Esimerkkidata alustukseen (tallennetaan selaimen muistiin)
+    let defaultPlants = [
+        { id: 1, name: "Kirjojuoru", task: "Kastele 2 dl ja tarkista mullan kosteus", intervalDays: 4, lastCared: "2026-09-20" },
+        { id: 2, name: "Peikonlehti", task: "Kastele reilusti ja pyyhi isommista lehdistä pölyt", intervalDays: 8, lastCared: "2026-09-21" },
+        { id: 3, name: "Aarrepensas", task: "Kastele kevyesti", intervalDays: 12, lastCared: "2026-09-10" }
+    ];
+
+    let plants = JSON.parse(localStorage.getItem('myPlants')) || defaultPlants;
+    let currentPlantIndex = 0;
+    let timerInterval = null;
+    let secondsLeft = 300; // 5 minuuttia
+
+    // Laske mikä kasvi on eniten hoidon tarpeessa
+    function getSortedPlants() {
+        let now = new Date();
+        return [...plants].sort((a, b) => {
+            let daysA = (now - new Date(a.lastCared)) / (1000 * 60 * 60 * 24);
+            let daysB = (now - new Date(b.lastCared)) / (1000 * 60 * 60 * 24);
+            let ratioA = daysA / a.intervalDays;
+            let ratioB = daysB / b.intervalDays;
+            return ratioB - ratioA; // Suurin tarve ensin
+        });
+    }
+
+    function renderCurrentPlant() {
+        let sorted = getSortedPlants();
+        if (sorted.length === 0 || currentPlantIndex >= sorted.length) {
+            document.getElementById('plantCard').innerHTML = `
+                <h2>🎉 Kaikki hoidettu tältä erää!</h2>
+                <p>Olet tehnyt loistavaa työtä. Voit sulkea sivun ja nauttia päivästäsi.</p>
+                <button class="btn" onclick="currentPlantIndex=0; renderCurrentPlant();">Aloita alusta</button>
+            `;
+            stopMusic();
+            return;
+        }
+
+        let plant = sorted[currentPlantIndex];
+        document.getElementById('plantName').innerText = plant.name;
+        document.getElementById('plantTask').innerText = plant.task;
+        document.getElementById('urgencyTag').innerText = currentPlantIndex === 0 ? "🔥 Eniten hoitoa vaativa" : "🌿 Seuraavana vuorossa";
+    }
+
+    function completeTask() {
+        let sorted = getSortedPlants();
+        let plant = sorted[currentPlantIndex];
+        
+        // Päivitä hoitopäivämäärä tähän hetkeen
+        let originalPlant = plants.find(p => p.id === plant.id);
+        if (originalPlant) {
+            originalPlant.lastCared = new Date().toISOString().split('T')[0];
+            localStorage.setItem('myPlants', JSON.stringify(plants));
+        }
+
+        currentPlantIndex = 0; // Palataan aina laskemaan kärkitapaus uudelleen
+        renderCurrentPlant();
+    }
+
+    function skipTask() {
+        currentPlantIndex++;
+        renderCurrentPlant();
+    }
+
+    // Fokusmusiikki ja automaattinen ajastin
+    function toggleMusic() {
+        let audio = document.getElementById('focusAudio');
+        let btn = document.getElementById('musicBtn');
+        let timerDisplay = document.getElementById('timerDisplay');
+
+        if (audio.paused) {
+            audio.play();
+            btn.innerText = "⏸️ Pysäytä Musiikki";
+            timerDisplay.style.display = "block";
+            startTimer();
+        } else {
+            stopMusic();
+        }
+    }
+
+    function startTimer() {
+        clearInterval(timerInterval);
+        secondsLeft = 300; // Reset 5 min
+        updateTimerDisplay();
+
+        timerInterval = setInterval(() => {
+            secondsLeft--;
+            updateTimerDisplay();
+
+            if (secondsLeft <= 0) {
+                stopMusic();
+                alert("⏱️ 5 minuutin fokus-aika päättyi! Hienoa työtä, voit lopettaa tältä erää tai jatkaa oman tuntemuksesi mukaan.");
+            }
+        }, 1000);
+    }
+
+    function stopMusic() {
+        let audio = document.getElementById('focusAudio');
+        let btn = document.getElementById('musicBtn');
+        let timerDisplay = document.getElementById('timerDisplay');
+
+        audio.pause();
+        clearInterval(timerInterval);
+        btn.innerText = "🎵 Aloita Fokus (5min)";
+        timerDisplay.style.display = "none";
+    }
+
+    function updateTimerDisplay() {
+        let mins = Math.floor(secondsLeft / 60);
+        let secs = secondsLeft % 60;
+        document.getElementById('timeRemaining').innerText = 
+            `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    function addSampleData() {
+        localStorage.setItem('myPlants', JSON.stringify(defaultPlants));
+        plants = defaultPlants;
+        currentPlantIndex = 0;
+        renderCurrentPlant();
+        alert("Esimerkkikasvit palautettu!");
+    }
+
+    // Käynnistys
+    renderCurrentPlant();
+</script>
+
+</body>
+</html>
 
