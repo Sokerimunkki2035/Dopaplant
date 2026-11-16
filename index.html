@@ -5,45 +5,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dopaplant – Kasvien Hoito (ADHD Focus)</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts: Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Canvas Confetti dopamiinipalkintoihin -->
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f4f7f4;
-            color: #2c3e50;
-            -webkit-tap-highlight-color: transparent;
+            background-color: #f3f7f3;
+            color: #1e293b;
         }
-
-        /* Pehmeät animaatiot */
         @keyframes popIn {
             0% { transform: scale(0.95); opacity: 0; }
             100% { transform: scale(1); opacity: 1; }
         }
-
         .animate-pop {
             animation: popIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
-
-        /* Kuvaruutujen kuvasuhde ja rajaus */
-        .photo-preview-img {
-            width: 100%;
-            height: 140px;
-            object-fit: cover;
-            border-radius: 0.75rem;
-            cursor: zoom-in;
-            transition: transform 0.2s ease;
-        }
-
-        .photo-preview-img:hover {
-            transform: scale(1.02);
-        }
-
-        /* Piilotettu tiedostokenttä */
         .hidden-file-input {
             display: none;
         }
@@ -51,437 +27,296 @@
 </head>
 <body class="min-h-screen flex flex-col items-center p-4 sm:p-6">
 
-    <!-- Ilmoitusbanneri (korvaa alert()-ikkunat) -->
-    <div id="toastContainer" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-4 pointer-events-none flex flex-col gap-2"></div>
-
-    <div class="w-full max-w-md">
+    <div class="w-full max-w-md flex flex-col gap-4">
         <!-- Otsikko -->
-        <header class="text-center mb-5">
+        <header class="text-center pt-1">
             <h1 class="text-2xl sm:text-3xl font-extrabold text-[#2e7d32] tracking-tight flex items-center justify-center gap-2">
                 <span>🌿</span> Dopaplant
             </h1>
-            <p class="text-xs sm:text-sm text-slate-500 mt-1">Yksi kasvi kerrallaan – rauhallinen fokus</p>
+            <p class="text-xs sm:text-sm text-slate-500 mt-1">1–3 helppoa tehtävää kerralla – nolla stressiä</p>
         </header>
 
-        <!-- Minitavoitteen edistymispalkki (Max 3 tehtävää per kerta) -->
-        <div id="sessionProgressBox" class="bg-white border border-[#dce7dc] rounded-2xl p-3 mb-4 shadow-xs">
+        <!-- Minitavoite-palkki (Max 3 tehtävää per kerta) -->
+        <section class="bg-white rounded-2xl p-3.5 shadow-sm border border-[#e0ebe0]">
             <div class="flex justify-between items-center text-xs font-bold mb-1.5">
-                <span class="text-[#2e7d32]" id="sessionProgressText">🎯 Tehtävä 1 / 3 (Maksimi 3 kerralla – ei stressiä!)</span>
-                <span class="text-slate-400" id="sessionPercentText">0/3 tehty</span>
+                <span id="sessionProgressText" class="text-[#2e7d32]">🎯 Tehtävä 1 / 3 – Ei stressiä!</span>
+                <span id="sessionPercentText" class="text-slate-400">0/3 tehty</span>
             </div>
-            <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
-                <div id="sessionProgressBar" class="bg-[#4caf50] h-full rounded-full transition-all duration-500" style="width: 10%;"></div>
+            <div class="w-full bg-[#e8f0e8] h-2.5 rounded-full overflow-hidden">
+                <div id="sessionProgressBar" class="bg-[#4caf50] h-full rounded-full transition-all duration-500" style="width: 12%"></div>
             </div>
-        </div>
+        </section>
 
-        <!-- Yläpalkki: Fokus-musiikki & Insight Timer -->
-        <div class="flex gap-2.5 mb-4">
-            <button id="musicBtn" onclick="toggleMusic()" class="flex-1 bg-[#2e7d32] hover:bg-[#1b5e20] active:scale-[0.98] text-white font-semibold py-3 px-3 rounded-2xl shadow-sm transition text-sm flex items-center justify-center gap-1.5">
-                <span>🎵</span> <span>Aloita Fokus (5min)</span>
+        <!-- Yläpalkin Fokus-työkalut -->
+        <div class="grid grid-cols-2 gap-2.5">
+            <button id="musicBtn" onclick="toggleMusic()" class="bg-[#2e7d32] hover:bg-[#1b5e20] active:scale-[0.98] text-white font-bold text-xs sm:text-sm py-3 px-3 rounded-2xl shadow-sm transition flex items-center justify-center gap-1.5">
+                <span>🎵</span> <span>Fokus (5 min)</span>
             </button>
-            <a href="https://insighttimer.com/" target="_blank" rel="noopener noreferrer" class="flex-1 bg-[#f39c12] hover:bg-[#e67e22] active:scale-[0.98] text-white font-semibold py-3 px-3 rounded-2xl shadow-sm transition text-sm flex items-center justify-center gap-1.5">
+            <a href="https://insighttimer.com/" target="_blank" rel="noopener noreferrer" class="bg-[#f59e0b] hover:bg-[#d97706] active:scale-[0.98] text-white font-bold text-xs sm:text-sm py-3 px-3 rounded-2xl shadow-sm transition flex items-center justify-center gap-1.5">
                 <span>🧘</span> <span>Insight Timer</span>
             </a>
         </div>
 
         <!-- Fokus-ajastimen näyttö -->
-        <div id="timerDisplay" class="hidden bg-[#e8f5e9] border border-[#c8e6c9] text-[#2e7d32] py-2.5 px-4 rounded-2xl font-bold text-center text-sm mb-4 shadow-sm">
-            ⏱️ Fokus-aikaa jäljellä: <span id="timeRemaining" class="font-mono text-base">05:00</span>
+        <div id="timerDisplay" class="hidden bg-[#e8f5e9] border border-[#c8e6c9] text-[#1b5e20] py-2.5 px-4 rounded-2xl text-center font-bold text-sm animate-pop">
+            ⏱️ Fokus-hetkeä jäljellä: <span id="timeRemaining" class="font-mono text-base">05:00</span>
         </div>
 
         <!-- Pääkortti: Vain YKSI kasvi kerrallaan -->
-        <main id="plantCard" class="bg-white rounded-3xl p-5 sm:p-6 shadow-lg border-2 border-[#e4ebe4] text-center mb-5 animate-pop">
-            <!-- Kiireellisyysmerkki -->
-            <div class="flex justify-between items-center mb-3">
-                <span id="urgencyTag" class="inline-block bg-[#ffe0b2] text-[#e65100] py-1 px-3 rounded-full text-xs font-bold">
-                    🔥 Eniten hoitoa vaativa
-                </span>
-                <span id="plantCounter" class="text-xs font-medium text-slate-400">1 / 3</span>
-            </div>
-
-            <!-- Kasvi-AI:n selkeä perustelu miksi juuri tämä kasvi nyt -->
-            <div id="aiReasonBox" class="bg-[#f1f8e9] border border-[#dcedc8] rounded-2xl p-3 mb-3 text-left flex items-start gap-2.5">
+        <main id="plantCard" class="bg-white rounded-3xl p-5 sm:p-6 shadow-md border-2 border-[#e2ece2] text-center animate-pop">
+            <!-- Kasvi-AI:n selkeä perustelu -->
+            <div class="bg-[#f0f7f0] border border-[#d4e8d4] rounded-2xl p-3 mb-4 text-left flex items-start gap-2.5">
                 <span class="text-xl leading-none mt-0.5">🤖</span>
-                <div class="text-xs text-slate-700 leading-relaxed">
-                    <span class="font-bold text-[#2e7d32] block mb-0.5">Kasvi-AI suosittelee tätä nyt:</span>
-                    <span id="aiReasonText">Lasketaan kiireellisintä kasvia...</span>
+                <div>
+                    <div class="text-[11px] font-extrabold uppercase tracking-wider text-[#2e7d32]">Kasvi-AI suosittelee nyt</div>
+                    <p id="aiReasonText" class="text-xs sm:text-sm text-slate-700 leading-snug mt-0.5">Valitaan sinulle sopivin kasvi...</p>
                 </div>
             </div>
 
-            <!-- Kasvin nimi ja hoito-ohje -->
-            <h2 id="plantName" class="text-2xl sm:text-3xl font-extrabold text-[#2e7d32] my-1">Ladataan...</h2>
-            <p id="plantTask" class="text-base sm:text-lg font-medium text-slate-700 mb-5">Kastele noin 2 dl vettä</p>
+            <!-- Kasvin nimi ja yksi selkeä tehtävä -->
+            <h2 id="plantName" class="text-2xl sm:text-3xl font-extrabold text-slate-800 mb-1.5">Ladataan...</h2>
+            <div id="plantTask" class="inline-block bg-[#fff8e1] text-[#b45309] border border-[#fde68a] font-bold text-sm sm:text-base px-4 py-2 rounded-2xl mb-5">
+                Kastele kevyesti
+            </div>
 
-            <!-- Ennen & Nyt -kuvavertailu -->
-            <div class="bg-[#f8faf8] p-3 rounded-2xl border border-[#e6ede6] mb-5">
-                <div class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2.5 flex items-center justify-center gap-1">
-                    <span>📸</span> Kasvun seuranta (Ennen & Nyt)
+            <!-- Vapaaehtoinen Ennen & Nyt -kuvavertailu -->
+            <div class="bg-[#f8faf8] p-3.5 rounded-2xl border border-[#e6ede6] mb-5">
+                <div class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1 flex items-center justify-center gap-1">
+                    <span>📸</span> Kasvun seuranta (Vapaaehtoinen)
                 </div>
-                
+                <p id="photoGentleHint" class="text-[11px] text-slate-500 mb-3 px-1 leading-snug">
+                    Kuva on vapaaehtoinen bonus – pelkkä Tehty-nappi riittää!
+                </p>
+
                 <div class="grid grid-cols-2 gap-3">
-                    <!-- AIEMMIN -laatikko -->
-                    <div class="bg-white rounded-xl p-2.5 border border-slate-200 flex flex-col justify-between min-h-[175px]">
-                        <div class="flex justify-between items-center mb-1.5">
-                            <span class="text-xs font-bold text-slate-600">Aiemmin</span>
-                            <span id="prevPhotoDate" class="text-[10px] text-slate-400"></span>
+                    <!-- AIEMMIN-ruutu -->
+                    <div class="bg-white rounded-xl p-2.5 border border-slate-200 flex flex-col items-center justify-between min-h-[135px]">
+                        <span class="text-[11px] font-bold text-slate-500 uppercase">Aiemmin</span>
+                        <div id="prevPhotoContent" class="w-full flex-1 flex flex-col items-center justify-center my-1.5">
+                            <span class="text-xs text-slate-400 italic">Ei kuvaa vielä</span>
                         </div>
-                        <div id="prevPhotoContent" class="flex-1 flex flex-col items-center justify-center text-slate-400 text-xs p-2 border border-dashed border-slate-200 rounded-lg bg-slate-50/50">
-                            <span class="text-xl mb-1 opacity-50">🌱</span>
-                            <span>Ei kuvaa vielä</span>
-                        </div>
+                        <span id="prevPhotoDate" class="text-[10px] text-slate-400"></span>
                     </div>
 
-                    <!-- NYT -laatikko -->
-                    <div class="bg-white rounded-xl p-2.5 border border-[#c8e6c9] flex flex-col justify-between min-h-[175px]">
-                        <div class="flex justify-between items-center mb-1.5">
-                            <span class="text-xs font-bold text-[#2e7d32]">Nyt</span>
-                            <button id="clearNowPhotoBtn" onclick="clearCurrentPhoto()" class="hidden text-[11px] text-red-500 hover:text-red-700 font-semibold px-1.5 py-0.5 rounded bg-red-50">
-                                ✕ Poista
+                    <!-- NYT-ruutu -->
+                    <div class="bg-white rounded-xl p-2.5 border border-dashed border-[#81c784] flex flex-col items-center justify-between min-h-[135px]">
+                        <span class="text-[11px] font-bold text-[#2e7d32] uppercase">Nyt</span>
+                        <div id="nowPhotoContent" class="w-full flex-1 flex flex-col items-center justify-center my-1.5">
+                            <button type="button" onclick="openPhotoSourceModal()" class="bg-[#e8f5e9] hover:bg-[#c8e6c9] active:scale-95 text-[#1b5e20] font-bold text-xs py-2.5 px-3 rounded-xl transition shadow-xs flex flex-col items-center gap-1">
+                                <span class="text-lg">📸</span>
+                                <span>Ota tai valitse kuva</span>
                             </button>
                         </div>
-
-                        <div id="nowPhotoContent" class="flex-1 flex flex-col items-center justify-center text-xs p-2 border border-dashed border-[#a5d6a7] rounded-lg bg-[#f1f8e9]/40">
-                            <button onclick="triggerPhotoInput()" class="w-full h-full flex flex-col items-center justify-center gap-1.5 text-[#2e7d32] hover:text-[#1b5e20] font-semibold py-2">
-                                <span class="text-2xl">📸</span>
-                                <span>Ota / Lataa kuva</span>
-                            </button>
-                        </div>
-
-                        <!-- Lisänapit kun kuva on lisätty Nyt-ruutuun -->
-                        <div id="nowPhotoActions" class="hidden mt-2 flex gap-1.5">
-                            <button onclick="savePhotoNow()" class="flex-1 bg-[#e8f5e9] hover:bg-[#c8e6c9] text-[#2e7d32] text-[11px] font-bold py-1.5 px-2 rounded-lg transition" title="Tallenna kuva heti Aiemmin-kuvaksi merkitsemättä kasvia hoidetuksi">
-                                💾 Tallenna kuva
-                            </button>
-                            <button onclick="triggerPhotoInput()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 text-[11px] font-semibold py-1.5 px-2 rounded-lg transition" title="Vaihda kuva">
-                                🔄
-                            </button>
-                        </div>
+                        <span id="nowPhotoStatus" class="text-[10px] text-slate-400">Valinnainen</span>
                     </div>
                 </div>
 
-                <!-- Kasvi-AI:n kehut ja visuaalisen muutoksen havainnot -->
-                <div id="aiPraiseBox" class="hidden mt-3 bg-gradient-to-r from-[#e8f5e9] to-[#f1f8e9] border border-[#a5d6a7] rounded-xl p-3 text-left animate-pop shadow-xs">
-                    <div class="flex items-start gap-2">
-                        <span class="text-lg leading-none">✨</span>
-                        <div class="text-xs text-[#1b5e20] leading-relaxed">
-                            <span class="font-extrabold block mb-0.5">Kasvi-AI:n havainto kuvasta:</span>
-                            <p id="aiPraiseText" class="font-medium"></p>
-                        </div>
+                <!-- AI-kuva-analyysin kehulaatikko -->
+                <div id="aiPraiseBox" class="hidden mt-3 bg-gradient-to-r from-[#ecfdf5] to-[#f0fdf4] border border-[#86efac] rounded-xl p-3 text-left animate-pop">
+                    <div class="flex items-center gap-1.5 text-xs font-extrabold text-[#15803d] mb-1">
+                        <span>✨</span> <span id="aiPraiseTitle">Kasvi-AI huomasi muutoksen!</span>
                     </div>
+                    <p id="aiPraiseText" class="text-xs text-slate-700 leading-relaxed"></p>
                 </div>
             </div>
 
-            <!-- Piilotettu kameran / tiedostonvalinnan kenttä -->
-            <input type="file" id="photoInput" accept="image/*" capture="environment" class="hidden-file-input" onchange="handleImageSelected(event)">
+            <!-- Kaksi erillistä piilotettua inputia: Kamera vs. Galleria / Google Kuvat -->
+            <input type="file" id="cameraInput" accept="image/*" capture="environment" class="hidden-file-input" onchange="handleImageSelected(event)">
+            <input type="file" id="galleryInput" accept="image/*" class="hidden-file-input" onchange="handleImageSelected(event)">
 
-            <!-- Päätoimintanapit -->
+            <!-- Päätoimintanapit: Nopea Tehty-pääreitti ilman kuvapakkoa -->
             <div class="flex flex-col gap-2.5">
-                <button onclick="completeTask()" class="w-full bg-[#4caf50] hover:bg-[#43a047] active:scale-[0.98] text-white font-bold text-lg py-4 px-6 rounded-2xl shadow-md transition flex items-center justify-center gap-2">
+                <button onclick="completeTask()" class="w-full bg-[#4caf50] hover:bg-[#43a047] active:scale-[0.98] text-white font-extrabold text-lg py-4 px-6 rounded-2xl shadow-md hover:shadow-lg transition flex items-center justify-center gap-2">
                     <span>Tehty!</span> <span>🌿</span>
                 </button>
-                <button onclick="skipTask()" class="w-full bg-slate-200 hover:bg-slate-300 active:scale-[0.98] text-slate-700 font-semibold text-sm py-3 px-4 rounded-2xl transition">
-                    Ohita tämä tältä erää ⏭️
+                <button onclick="skipTask()" class="w-full bg-transparent hover:bg-slate-100 active:scale-[0.98] text-slate-400 hover:text-slate-600 font-medium text-xs py-2 px-3 rounded-xl transition">
+                    Ei nyt, katsotaan myöhemmin ⏭️
                 </button>
             </div>
         </main>
 
-        <!-- Alapalkin hallintanapit -->
-        <footer class="flex flex-wrap justify-center gap-2.5 mt-2 mb-8">
-            <button onclick="openAddPlantModal()" class="bg-[#2e7d32] hover:bg-[#1b5e20] text-white font-semibold text-xs sm:text-sm py-2.5 px-4 rounded-xl shadow-sm transition flex items-center gap-1.5">
-                <span>➕</span> Lisää oma kasvi
+        <!-- Alatunnisteen hallintanapit -->
+        <footer class="grid grid-cols-2 gap-2.5 pb-6">
+            <button onclick="openAddPlantModal()" class="bg-white hover:bg-slate-50 active:scale-[0.98] text-slate-700 font-bold text-xs sm:text-sm py-3 px-3 rounded-2xl border border-slate-200 shadow-xs transition">
+                ➕ Lisää oma kasvi
             </button>
-            <button onclick="openManagePlantsModal()" class="bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-semibold text-xs sm:text-sm py-2.5 px-4 rounded-xl shadow-sm transition flex items-center gap-1.5">
-                <span>🪴</span> Omat kasvit (<span id="totalPlantsCount">0</span>)
-            </button>
-            <button onclick="confirmRestoreSamples()" class="bg-slate-500 hover:bg-slate-600 text-white font-semibold text-xs sm:text-sm py-2.5 px-4 rounded-xl shadow-sm transition">
-                🔄 Palauta esimerkit
+            <button onclick="openManagePlantsModal()" class="bg-white hover:bg-slate-50 active:scale-[0.98] text-slate-700 font-bold text-xs sm:text-sm py-3 px-3 rounded-2xl border border-slate-200 shadow-xs transition">
+                🪴 Omat kasvit (<span id="plantCountBadge">0</span>)
             </button>
         </footer>
     </div>
 
-    <!-- MODAALI 1: Lisää uusi kasvi -->
-    <div id="addPlantModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-xs z-40 flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl animate-pop">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-extrabold text-[#2e7d32]">🌱 Lisää uusi kasvi</h3>
-                <button onclick="closeAddPlantModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold px-2">✕</button>
+    <!-- MODAALI 1: Valitse Kamera tai Google Kuvat / Galleria -->
+    <div id="photoSourceModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-end sm:items-center justify-center p-4" onclick="closePhotoSourceModal(event)">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-5 shadow-2xl animate-pop" onclick="event.stopPropagation()">
+            <div class="text-center mb-4">
+                <div class="text-2xl mb-1">📸</div>
+                <h3 class="text-lg font-extrabold text-slate-800">Lisää kasvista kuva</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Valitse ottaako uuden kuvan vai haetaanko kuva Google Kuvista / galleriasta</p>
             </div>
 
-            <form id="addPlantForm" onsubmit="saveNewPlant(event)" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Kasvin nimi *</label>
-                    <input type="text" id="newPlantName" required placeholder="esim. Kultaköynnös" class="w-full border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-[#2e7d32]">
-                </div>
+            <div class="flex flex-col gap-3">
+                <button type="button" onclick="triggerCameraCapture()" class="w-full bg-[#2e7d32] hover:bg-[#1b5e20] active:scale-[0.98] text-white font-bold py-3.5 px-4 rounded-2xl shadow-sm transition flex items-center justify-center gap-2.5 text-sm">
+                    <span class="text-lg">📷</span>
+                    <span>Ota uusi kuva kameralla</span>
+                </button>
 
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Hoito-ohje *</label>
-                    <input type="text" id="newPlantTask" required placeholder="esim. Kastele 1,5 dl ja sumuta lehdet" class="w-full border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-[#2e7d32]">
-                </div>
+                <button type="button" onclick="triggerGallerySelect()" class="w-full bg-[#eff6ff] hover:bg-[#dbeafe] active:scale-[0.98] text-[#1d4ed8] border border-[#bfdbfe] font-bold py-3.5 px-4 rounded-2xl transition flex items-center justify-center gap-2.5 text-sm">
+                    <span class="text-lg">🖼️</span>
+                    <span>Valitse Google Kuvista / Galleriasta</span>
+                </button>
 
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Kasteluväli (päivinä) *</label>
-                    <input type="number" id="newPlantInterval" required min="1" max="90" value="7" class="w-full border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-[#2e7d32]">
-                </div>
+                <button type="button" onclick="closePhotoSourceModal()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold py-2.5 px-4 rounded-2xl text-xs transition mt-1">
+                    Peruuta
+                </button>
+            </div>
+        </div>
+    </div>
 
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Aloituskuva (valinnainen)</label>
-                    <div class="flex items-center gap-3">
-                        <button type="button" onclick="document.getElementById('newPlantPhotoInput').click()" class="bg-[#e8f5e9] hover:bg-[#c8e6c9] text-[#2e7d32] font-semibold text-xs py-2.5 px-4 rounded-xl transition flex items-center gap-1.5">
-                            <span>📸</span> Ota / Valitse kuva
-                        </button>
-                        <span id="newPlantPhotoStatus" class="text-xs text-slate-400">Ei kuvaa valittuna</span>
-                    </div>
-                    <input type="file" id="newPlantPhotoInput" accept="image/*" capture="environment" class="hidden-file-input" onchange="handleNewPlantImage(event)">
-                    <div id="newPlantPreviewContainer" class="hidden mt-2 relative w-24 h-24">
-                        <img id="newPlantPreviewImg" src="" alt="Esikatselu" class="w-24 h-24 object-cover rounded-xl border border-slate-200">
-                        <button type="button" onclick="clearNewPlantImage()" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 text-xs font-bold shadow">✕</button>
-                    </div>
-                </div>
+    <!-- MODAALI 2: Kuvan suurennus -->
+    <div id="zoomModal" class="hidden fixed inset-0 bg-black/80 z-50 flex flex-col items-center justify-center p-4" onclick="closeZoomModal()">
+        <div class="max-w-lg w-full bg-white rounded-3xl p-3 shadow-2xl animate-pop" onclick="event.stopPropagation()">
+            <img id="zoomedImg" src="" alt="Suurennettu kasvi" class="w-full max-h-[70vh] object-contain rounded-2xl bg-slate-100">
+            <div class="flex justify-between items-center mt-3 px-2">
+                <span id="zoomCaption" class="text-xs font-bold text-slate-600"></span>
+                <button onclick="closeZoomModal()" class="bg-slate-800 text-white text-xs font-bold px-4 py-2 rounded-xl">Sulje</button>
+            </div>
+        </div>
+    </div>
 
-                <div class="flex gap-2.5 pt-2">
-                    <button type="button" onclick="closeAddPlantModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-3 rounded-xl text-sm transition">
-                        Peruuta
-                    </button>
-                    <button type="submit" class="flex-1 bg-[#2e7d32] hover:bg-[#1b5e20] text-white font-bold py-3 rounded-xl text-sm shadow-md transition">
-                        Tallenna kasvi 🌿
-                    </button>
+    <!-- MODAALI 3: Lisää oma kasvi -->
+    <div id="addPlantModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4" onclick="closeAddPlantModal(event)">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-5 shadow-2xl animate-pop" onclick="event.stopPropagation()">
+            <h3 class="text-lg font-extrabold text-slate-800 mb-3">➕ Lisää uusi kasvi</h3>
+            <form onsubmit="saveNewPlant(event)" class="flex flex-col gap-3">
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1">Kasvin nimi</label>
+                    <input type="text" id="newPlantName" required placeholder="Esim. Kultaköynnös" class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#2e7d32]">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1">Helppo hoito-ohje</label>
+                    <input type="text" id="newPlantTask" required placeholder="Esim. Kastele n. 1,5 dl vettä" class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#2e7d32]">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1">Kasteluväli (päivinä)</label>
+                    <input type="number" id="newPlantInterval" min="1" max="60" value="7" required class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#2e7d32]">
+                </div>
+                <div class="flex gap-2 mt-2">
+                    <button type="button" onclick="closeAddPlantModal()" class="flex-1 bg-slate-100 text-slate-600 font-bold py-2.5 rounded-xl text-sm">Peruuta</button>
+                    <button type="submit" class="flex-1 bg-[#2e7d32] text-white font-bold py-2.5 rounded-xl text-sm">Tallenna 🌿</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- MODAALI 2: Hallitse kasveja -->
-    <div id="managePlantsModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-xs z-40 flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl animate-pop max-h-[85vh] flex flex-col">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-extrabold text-[#2e7d32]">🪴 Omat kasvit</h3>
-                <button onclick="closeManagePlantsModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold px-2">✕</button>
+    <!-- MODAALI 4: Omat kasvit -lista -->
+    <div id="managePlantsModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4" onclick="closeManagePlantsModal(event)">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-5 shadow-2xl max-h-[80vh] flex flex-col animate-pop" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="text-lg font-extrabold text-slate-800">🪴 Omat kasvit</h3>
+                <button onclick="closeManagePlantsModal()" class="text-slate-400 hover:text-slate-600 font-bold text-sm">✕</button>
             </div>
-            <div id="plantsListContainer" class="overflow-y-auto space-y-2.5 pr-1 flex-1">
-                <!-- Lista renderöidään JS:llä -->
-            </div>
-            <div class="mt-4 pt-3 border-t border-slate-100">
-                <button onclick="closeManagePlantsModal()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2.5 rounded-xl text-sm transition">
-                    Sulje
-                </button>
+            <div id="plantsListContainer" class="overflow-y-auto flex-1 flex flex-col gap-2 pr-1"></div>
+            <div class="mt-4 pt-3 border-t border-slate-100 flex justify-between items-center">
+                <button onclick="resetSamplePlants()" class="text-xs text-slate-400 hover:text-slate-600 underline">Palauta esimerkkikasvit</button>
+                <button onclick="closeManagePlantsModal()" class="bg-[#2e7d32] text-white text-xs font-bold px-4 py-2 rounded-xl">Valmis</button>
             </div>
         </div>
     </div>
 
-    <!-- MODAALI 3: Kuvan suurennus (Lightbox) -->
-    <div id="imageLightboxModal" onclick="closeLightbox()" class="hidden fixed inset-0 bg-black/85 z-50 flex flex-col items-center justify-center p-4 cursor-zoom-out">
-        <div onclick="event.stopPropagation()" class="relative max-w-lg w-full bg-white rounded-2xl p-2 shadow-2xl animate-pop cursor-default">
-            <img id="lightboxImg" src="" alt="Suurennettu kasvi" class="w-full max-h-[75vh] object-contain rounded-xl bg-slate-900">
-            <div class="flex justify-between items-center px-3 py-2">
-                <span id="lightboxCaption" class="text-xs font-semibold text-slate-600"></span>
-                <button onclick="closeLightbox()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold py-1.5 px-3 rounded-lg">
-                    Sulje ✕
-                </button>
-            </div>
-        </div>
-    </div>
+    <!-- Kevyt ilmoituslaatikko (ei alert()-ponnahduksia) -->
+    <div id="toastBanner" class="hidden fixed bottom-5 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs sm:text-sm font-semibold px-4 py-3 rounded-2xl shadow-lg z-50 animate-pop text-center max-w-[90vw]"></div>
 
-    <!-- MODAALI 4: Vahvistusikkuna (korvaa confirm()-ikkunan) -->
-    <div id="confirmModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl text-center animate-pop">
-            <div class="text-3xl mb-2">🌿</div>
-            <h3 id="confirmTitle" class="text-lg font-bold text-slate-800 mb-1">Vahvista toiminto</h3>
-            <p id="confirmMessage" class="text-sm text-slate-600 mb-5">Oletko varma?</p>
-            <div class="flex gap-2.5">
-                <button onclick="closeConfirmModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2.5 rounded-xl text-sm">
-                    Peruuta
-                </button>
-                <button id="confirmActionBtn" class="flex-1 bg-[#2e7d32] hover:bg-[#1b5e20] text-white font-bold py-2.5 rounded-xl text-sm">
-                    Kyllä
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Taustamusiikki (Avoimen lisenssin Ambient Focus / Lo-Fi audio) -->
+    <!-- Taustamusiikki (Ambient Lo-Fi) -->
     <audio id="focusAudio" loop>
         <source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=lofi-study-112191.mp3" type="audio/mpeg">
     </audio>
 
     <script>
-        // --- SOVELUKSEN TILA JA TIETORAKENTEET ---
+        // --- 1. TIETORAKENTEET JA ALUSTUS ---
         const STORAGE_KEY = 'dopaplant_v2_plants';
-        const MAX_SESSION_TASKS = 3; // Enintään 3 kasvia per hoitokerta (ADHD-ystävällinen minitavoite)
+        const SESSION_GOAL_LIMIT = 3; // Enintään 1–3 tehtävää per kerta
 
-        // Esimerkkikasvit alustukseen
-        function getInitialSamplePlants() {
-            const today = new Date();
-            const daysAgo = (d) => {
-                const date = new Date(today);
-                date.setDate(date.getDate() - d);
-                return date.toISOString().split('T')[0];
-            };
-
-            return [
-                {
-                    id: 1,
-                    name: "Kirjojuoru",
-                    task: "Kastele 2 dl ja tarkista mullan kosteus",
-                    intervalDays: 4,
-                    lastCared: daysAgo(5),
-                    prevPhoto: null,
-                    prevPhotoDate: null
-                },
-                {
-                    id: 2,
-                    name: "Peikonlehti",
-                    task: "Kastele reilusti ja pyyhi isommista lehdistä pölyt",
-                    intervalDays: 8,
-                    lastCared: daysAgo(9),
-                    prevPhoto: null,
-                    prevPhotoDate: null
-                },
-                {
-                    id: 3,
-                    name: "Aarrepensas",
-                    task: "Kastele kevyesti (anna mullan kuivahtaa välissä)",
-                    intervalDays: 12,
-                    lastCared: daysAgo(14),
-                    prevPhoto: null,
-                    prevPhotoDate: null
-                },
-                {
-                    id: 4,
-                    name: "Kultaköynnös",
-                    task: "Tarkista pintamulta ja kastele noin 1,5 dl",
-                    intervalDays: 6,
-                    lastCared: daysAgo(7),
-                    prevPhoto: null,
-                    prevPhotoDate: null
-                }
-            ];
+        function getDaysAgoISO(days) {
+            const d = new Date();
+            d.setDate(d.getDate() - days);
+            return d.toISOString().split('T')[0];
         }
 
-        // Lataa kasvit localStoragesta (tuetaan myös vanhaa 'myPlants'-avainta)
-        function loadPlants() {
-            try {
-                const savedV2 = localStorage.getItem(STORAGE_KEY);
-                if (savedV2) return JSON.parse(savedV2);
-
-                const oldSaved = localStorage.getItem('myPlants');
-                if (oldSaved) {
-                    const parsed = JSON.parse(oldSaved);
-                    return parsed.map(p => ({
-                        ...p,
-                        prevPhoto: p.prevPhoto || null,
-                        prevPhotoDate: p.prevPhotoDate || null
-                    }));
-                }
-            } catch (e) {
-                console.error("Virhe ladattaessa kasveja:", e);
+        const defaultPlants = [
+            {
+                id: 1,
+                name: "Kirjojuoru",
+                task: "Kastele n. 2 dl ja kokeile mullan pintaa",
+                intervalDays: 4,
+                lastCared: getDaysAgoISO(5),
+                prevPhoto: null,
+                prevPhotoDate: null,
+                prevMetrics: null
+            },
+            {
+                id: 2,
+                name: "Peikonlehti",
+                task: "Kastele reilusti ja pyyhi pölyt isoista lehdistä",
+                intervalDays: 8,
+                lastCared: getDaysAgoISO(9),
+                prevPhoto: null,
+                prevPhotoDate: null,
+                prevMetrics: null
+            },
+            {
+                id: 3,
+                name: "Aarrepensas",
+                task: "Kastele kevyesti – kestää kuivuutta hyvin",
+                intervalDays: 14,
+                lastCared: getDaysAgoISO(12),
+                prevPhoto: null,
+                prevPhotoDate: null,
+                prevMetrics: null
+            },
+            {
+                id: 4,
+                name: "Kultaköynnös",
+                task: "Kastele 1,5 dl ja suihkuta lehtiä halutessasi",
+                intervalDays: 6,
+                lastCared: getDaysAgoISO(4),
+                prevPhoto: null,
+                prevPhotoDate: null,
+                prevMetrics: null
             }
-            return getInitialSamplePlants();
+        ];
+
+        let plants = [];
+        try {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            plants = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(defaultPlants));
+        } catch (e) {
+            plants = JSON.parse(JSON.stringify(defaultPlants));
         }
+
+        let sessionCompletedCount = 0;
+        let sessionSkippedIds = new Set();
+        let pendingPhotoDataUrl = null;
+        let pendingPhotoMetrics = null;
+
+        let timerInterval = null;
+        let secondsLeft = 300;
 
         function savePlantsToStorage() {
             try {
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(plants));
-                updateTotalPlantsCount();
-            } catch (e) {
-                if (e.name === 'QuotaExceededError') {
-                    showToast("⚠️ Selaimen muisti on täynnä! Poista vanhoja kasveja vapauttaaksesi tilaa.", "warning");
-                } else {
-                    showToast("⚠️ Tallennus epäonnistui.", "warning");
-                }
+            } catch (err) {
+                showToast("⚠️ Tallennustila täynnä – vanhoja kuvia kannattaa tiivistää.");
             }
+            updatePlantCountBadge();
         }
 
-        let plants = loadPlants();
-        let currentPlantIndex = 0;
-        let sessionCompletedCount = 0; // Montako kasvia on hoidettu tässä sessiossa (0..3)
-        let sessionSkippedIds = new Set(); // Tässä sessiossa ohitetut kasvit
-        let sessionGoalLimit = MAX_SESSION_TASKS;
-        let pendingPhotoDataUrl = null; // Väliaikainen kuva "Nyt"-ruudussa
-        let newPlantPhotoDataUrl = null; // Väliaikainen kuva uuden kasvin lisäysmodaaliin
-        let timerInterval = null;
-        let secondsLeft = 300; // 5 minuuttia
-
-        // --- ILMOITUKSET (TOAST) ---
-        function showToast(message, type = "success") {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            const bgClass = type === "warning" 
-                ? "bg-amber-600 text-white" 
-                : "bg-[#2e7d32] text-white";
-
-            toast.className = `${bgClass} px-4 py-3 rounded-2xl shadow-lg text-sm font-semibold text-center animate-pop pointer-events-auto`;
-            toast.innerText = message;
-            container.appendChild(toast);
-
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                toast.style.transition = 'opacity 0.3s ease';
-                setTimeout(() => toast.remove(), 300);
-            }, 3200);
+        function updatePlantCountBadge() {
+            const badge = document.getElementById('plantCountBadge');
+            if (badge) badge.innerText = plants.length;
         }
 
-        // --- PÄIVÄMÄÄRÄN MUOTOILU ---
-        function formatFinnishDate(isoDateStr) {
-            if (!isoDateStr) return "";
-            const parts = isoDateStr.split('-');
-            if (parts.length !== 3) return isoDateStr;
-            return `${parseInt(parts[2], 10)}.${parseInt(parts[1], 10)}.${parts[0]}`;
-        }
-
-        function getTodayIsoDate() {
-            return new Date().toISOString().split('T')[0];
-        }
-
-        // --- KUVAN PAKKAUS HTML5 CANVASILLA ---
-        function compressImage(file, maxDimension = 600, quality = 0.75) {
-            return new Promise((resolve, reject) => {
-                if (!file || !file.type.startsWith('image/')) {
-                    reject(new Error("Valittu tiedosto ei ole kuva."));
-                    return;
-                }
-
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    const img = new Image();
-                    img.onload = () => {
-                        let width = img.width;
-                        let height = img.height;
-
-                        // Lasketaan uudet mittasuhteet säilyttäen kuvasuhde
-                        if (width > height) {
-                            if (width > maxDimension) {
-                                height = Math.round((height * maxDimension) / width);
-                                width = maxDimension;
-                            }
-                        } else {
-                            if (height > maxDimension) {
-                                width = Math.round((width * maxDimension) / height);
-                                height = maxDimension;
-                            }
-                        }
-
-                        const canvas = document.createElement('canvas');
-                        canvas.width = width;
-                        canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        
-                        // Valkoinen tausta läpinäkyville PNG-kuville ennen JPEG-pakkausta
-                        ctx.fillStyle = "#FFFFFF";
-                        ctx.fillRect(0, 0, width, height);
-                        ctx.drawImage(img, 0, 0, width, height);
-
-                        const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
-                        resolve(compressedDataUrl);
-                    };
-                    img.onerror = () => reject(new Error("Kuvan lataus epäonnistui."));
-                    img.src = event.target.result;
-                };
-                reader.onerror = () => reject(new Error("Tiedoston luku epäonnistui."));
-                reader.readAsDataURL(file);
-            });
-        }
-
-        // --- KASVIEN JÄRJESTYS (KIEREELLISIN ENSIN) ---
+        // --- 2. KASVI-AI:N PRIORISOINTI JA SELKEÄ PERUSTELU ---
         function getSortedPlants() {
             const now = new Date();
             return [...plants].sort((a, b) => {
@@ -489,445 +324,368 @@
                 const daysB = Math.max(0, (now - new Date(b.lastCared)) / (1000 * 60 * 60 * 24));
                 const ratioA = daysA / (a.intervalDays || 7);
                 const ratioB = daysB / (b.intervalDays || 7);
-                return ratioB - ratioA; // Suurin hoitotarve ensin
+                return ratioB - ratioA;
             });
         }
 
-        // Laskee tämän session aktiivisen jonon (enintään 3 hoitoa kaipaavaa kasvia)
-        function getSessionQueue() {
-            const now = new Date();
-            const sorted = getSortedPlants().filter(p => !sessionSkippedIds.has(p.id));
-            // Priorisoidaan kasvit, joiden hoitoväli on täyttynyt tai lähestyy (vähintään 75% kulunut)
-            const urgent = sorted.filter(p => {
-                const days = Math.max(0, (now - new Date(p.lastCared)) / (1000 * 60 * 60 * 24));
-                return (days / (p.intervalDays || 7)) >= 0.75;
-            });
-            return urgent.length > 0 ? urgent : sorted;
-        }
-
-        // Generoi selkeän, stressittömän AI-perustelun miksi juuri tämä kasvi on vuorossa
-        function buildAiPriorityReason(plant) {
+        function buildAiRecommendationReason(plant) {
             const now = new Date();
             const daysSince = Math.max(0, Math.floor((now - new Date(plant.lastCared)) / (1000 * 60 * 60 * 24)));
-            const overdueDays = daysSince - plant.intervalDays;
+            const ratio = daysSince / (plant.intervalDays || 7);
 
-            if (overdueDays > 1) {
-                return `Valitsin sinulle <strong>${plant.name}</strong>-kasvin ensin, koska sen edellisestä hoidosta on ${daysSince} päivää (suositusväli ${plant.intervalDays} pv). Pieni vesitilkka piristää sitä heti!`;
-            } else if (overdueDays >= 0) {
-                return `<strong>${plant.name}</strong> on juuri nyt hoitovuorossa (${daysSince} pv edellisestä kerrasta). Hoidetaan tämä rauhassa alta pois – muita ei tarvitse miettiä nyt.`;
+            if (ratio >= 1.2) {
+                return `Valitsin sinulle tänään lajin ${plant.name}, koska edellisestä hoidosta on ${daysSince} päivää (suositus ${plant.intervalDays} pv). Hoidetaan vain tämä yksi nyt!`;
+            } else if (ratio >= 0.85) {
+                return `${plant.name} on juuri nyt sopivassa hoitovuorossa (${daysSince} pv edellisestä kerrasta). Nopea pikkuhomma!`;
             } else {
-                const daysLeft = plant.intervalDays - daysSince;
-                return `Kaikki kiireellisimmät on jo hoidettu! Jos haluat tehdä vielä yhden pienen teon, <strong>${plant.name}</strong> kaipaisi hoitoa seuraavaksi (noin ${daysLeft} pv päästä).`;
+                return `${plant.name} on seuraavana jonossa (${daysSince} pv edellisestä hoidosta). Voit hoitaa sen kevyesti tai ohittaa tältä erää.`;
             }
         }
 
-        // Päivittää yläosan minitavoite-mittarin
+        // --- 3. PÄÄKORTIN JA MINITAVOITTEEN RENDERÖINTI ---
         function updateSessionProgressUI() {
             const progressText = document.getElementById('sessionProgressText');
             const percentText = document.getElementById('sessionPercentText');
             const progressBar = document.getElementById('sessionProgressBar');
             if (!progressText || !percentText || !progressBar) return;
 
-            const currentStep = Math.min(sessionCompletedCount + 1, sessionGoalLimit);
-            const pct = Math.min(100, Math.round((sessionCompletedCount / sessionGoalLimit) * 100));
+            const currentStep = Math.min(sessionCompletedCount + 1, SESSION_GOAL_LIMIT);
+            const pct = Math.min(100, Math.round((sessionCompletedCount / SESSION_GOAL_LIMIT) * 100));
 
-            if (sessionCompletedCount >= sessionGoalLimit) {
-                progressText.innerText = `🎉 Minitavoite (${sessionGoalLimit}/${sessionGoalLimit}) täynnä – loistavaa työtä!`;
+            if (sessionCompletedCount >= SESSION_GOAL_LIMIT) {
+                progressText.innerText = `🎉 Minitavoite (${SESSION_GOAL_LIMIT}/${SESSION_GOAL_LIMIT}) täynnä – loistavaa työtä!`;
             } else {
-                progressText.innerText = `🎯 Tehtävä ${currentStep} / ${sessionGoalLimit} (Maksimi ${sessionGoalLimit} kerralla – ei stressiä!)`;
+                progressText.innerText = `🎯 Tehtävä ${currentStep} / ${SESSION_GOAL_LIMIT} – Ei stressiä!`;
             }
-            percentText.innerText = `${sessionCompletedCount}/${sessionGoalLimit} tehty`;
+            percentText.innerText = `${sessionCompletedCount}/${SESSION_GOAL_LIMIT} tehty`;
             progressBar.style.width = `${Math.max(12, pct)}%`;
         }
 
-        // --- VISUAALINEN KUVA-ANALYYSI & KEHUGENERAATTORI ---
-        function analyzeImageMetrics(dataUrl) {
-            return new Promise((resolve) => {
-                const img = new Image();
-                img.onload = () => {
-                    const size = 96; // Pieni näyteikkuna nopeaan pikselianalyysiin
-                    const canvas = document.createElement('canvas');
-                    canvas.width = size;
-                    canvas.height = size;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, size, size);
+        function updatePhotoGentleHint(plant) {
+            const hintEl = document.getElementById('photoGentleHint');
+            if (!hintEl) return;
 
-                    const data = ctx.getImageData(0, 0, size, size).data;
-                    let greenPixels = 0;
-                    let totalGreenness = 0;
-                    let totalBrightness = 0;
-                    let saturationSum = 0;
-                    const pixelCount = size * size;
-
-                    for (let i = 0; i < data.length; i += 4) {
-                        const r = data[i];
-                        const g = data[i + 1];
-                        const b = data[i + 2];
-
-                        const max = Math.max(r, g, b);
-                        const min = Math.min(r, g, b);
-                        const brightness = (r + g + b) / 3;
-                        const saturation = max === 0 ? 0 : (max - min) / max;
-
-                        totalBrightness += brightness;
-                        saturationSum += saturation;
-
-                        // Tunnistetaan kasvin vihreät / elinvoimaiset sävyt
-                        const greenExcess = g - ((r + b) / 2);
-                        if (greenExcess > 8 && g > 45) {
-                            greenPixels++;
-                            totalGreenness += greenExcess;
-                        }
-                    }
-
-                    resolve({
-                        greenCoverage: (greenPixels / pixelCount) * 100,
-                        avgGreenIntensity: greenPixels > 0 ? totalGreenness / greenPixels : 0,
-                        avgBrightness: totalBrightness / pixelCount,
-                        avgSaturation: (saturationSum / pixelCount) * 100
-                    });
-                };
-                img.onerror = () => resolve(null);
-                img.src = dataUrl;
-            });
-        }
-
-        async function generateAiPhotoPraise(plantName, prevDataUrl, newDataUrl) {
-            const newMetrics = await analyzeImageMetrics(newDataUrl);
-            if (!newMetrics) {
-                return `Mahtavaa, että nappasit kuvan kasvista ${plantName}! Kuvallinen seuranta tekee kasvun huomaamisesta helppoa.`;
+            if (!plant.prevPhoto || !plant.prevPhotoDate) {
+                hintEl.className = "text-[11px] text-[#2e7d32] font-medium mb-3 px-1 leading-snug";
+                hintEl.innerText = "🌱 Halutessasi: nappaa ensimmäinen aloituskuva tai valitse se Google Kuvista (täysin vapaaehtoista!).";
+                return;
             }
 
-            // Jos tämä on ensimmäinen kuva kasvista
-            if (!prevDataUrl) {
-                const greenPct = Math.max(12, Math.round(newMetrics.greenCoverage));
-                return `Hieno aloituskuva! Kasvi-AI tallensi lähtötilanteen (${plantName}, lehtivihreän sävyindeksi ${greenPct}%). Seuraavalla kerralla vertaan uutta kuvaa tähän ja kerron pienetkin kasvun merkit!`;
-            }
-
-            const prevMetrics = await analyzeImageMetrics(prevDataUrl);
-            if (!prevMetrics) {
-                return `Hienoa työtä! ${plantName} näyttää virkeältä ja hyvin hoidetulta edelliseen kertaan verrattuna.`;
-            }
-
-            const greenDiff = Math.round(newMetrics.greenIntensity - prevMetrics.avgGreenIntensity);
-            const coverageDiff = Math.round(newMetrics.greenCoverage - prevMetrics.greenCoverage);
-            const brightnessDiff = Math.round(((newMetrics.avgBrightness - prevMetrics.avgBrightness) / 255) * 100);
-
-            const observations = [];
-
-            if (greenDiff >= 2) {
-                observations.push(`lehtien klorofyllin eli vihreän sävy on syventynyt +${Math.min(18, greenDiff + 3)}%`);
-            } else if (coverageDiff >= 2) {
-                observations.push(`kasvin lehvästö näyttää täyteläisemmältä (+${Math.min(15, coverageDiff + 2)}% enemmän vihreää pinta-alaa)`);
+            const daysSincePhoto = Math.max(0, Math.floor((new Date() - new Date(plant.prevPhotoDate)) / (1000 * 60 * 60 * 24)));
+            if (daysSincePhoto >= 21) {
+                const weeks = Math.floor(daysSincePhoto / 7);
+                hintEl.className = "text-[11px] text-[#2e7d32] font-semibold mb-3 px-1 leading-snug";
+                hintEl.innerText = `📸 Halutessasi: edellisestä kuvasta on jo ${weeks} viikkoa – nyt saatat huomata jo selkeää kasvua!`;
             } else {
-                observations.push(`lehtien luonnollinen elinvoima ja tasainen väri ovat säilyneet erinomaisesti`);
+                hintEl.className = "text-[11px] text-slate-500 mb-3 px-1 leading-snug";
+                hintEl.innerText = "Kuva on vapaaehtoinen bonus – voit painaa suoraan Tehty! 🌿";
             }
-
-            if (brightnessDiff >= 3) {
-                observations.push(`lehtipinta heijastaa valoa raikkaammin, mikä kertoo hyvästä nestetasapainosta`);
-            } else {
-                observations.push(`kasvin ryhti näyttää vakaalta ja tasapainoiselta edelliseen kuvaan verrattuna`);
-            }
-
-            return `Kasvi-AI huomasi: ${plantName} on kehittynyt hienosti – ${observations[0]} ja ${observations[1]}. Juuri tällaista pientä muutosta on vaikea nähdä paljaalla silmällä, mutta hoitosi selvästi toimii!`;
         }
 
-        function showAiPraise(message) {
-            const box = document.getElementById('aiPraiseBox');
-            const textEl = document.getElementById('aiPraiseText');
-            if (!box || !textEl) return;
-            textEl.innerText = message;
-            box.classList.remove('hidden');
-        }
-
-        function hideAiPraise() {
-            const box = document.getElementById('aiPraiseBox');
-            if (box) box.classList.add('hidden');
-        }
-
-        // --- PÄÄNÄKYMÄN RENDERÖINTI ---
         function renderCurrentPlant() {
-            updateTotalPlantsCount();
             updateSessionProgressUI();
+            updatePlantCountBadge();
 
             const card = document.getElementById('plantCard');
-            const queue = getSessionQueue();
+            const sorted = getSortedPlants().filter(p => !sessionSkippedIds.has(p.id));
 
-            // 1. Jos ei ole yhtään kasvia
-            if (plants.length === 0) {
+            // Jos minitavoite (3 tehtävää) on täynnä tai kaikki saatavilla olevat on käyty läpi
+            if (sessionCompletedCount >= SESSION_GOAL_LIMIT || sorted.length === 0) {
+                stopMusic();
+                const doneMsg = sessionCompletedCount > 0
+                    ? `Teit ${sessionCompletedCount} kasvin hoidon – juuri sopiva annos tälle kerralle!`
+                    : `Kaikki kasvit on jo katsottu tältä erää läpi.`;
+
                 card.innerHTML = `
-                    <div class="py-6">
-                        <div class="text-4xl mb-3">🪴</div>
-                        <h2 class="text-xl font-extrabold text-[#2e7d32] mb-2">Ei vielä kasveja listalla</h2>
-                        <p class="text-sm text-slate-600 mb-5">Lisää ensimmäinen kasvisi tai lataa esimerkkikasvit aloittaaksesi.</p>
-                        <button onclick="openAddPlantModal()" class="bg-[#2e7d32] hover:bg-[#1b5e20] text-white font-bold py-3 px-6 rounded-2xl shadow-md transition">
-                            ➕ Lisää oma kasvi
+                    <div class="py-4 animate-pop">
+                        <div class="text-5xl mb-3">🏆🌿</div>
+                        <h2 class="text-2xl font-extrabold text-[#2e7d32] mb-2">Hienoa työtä! Minitavoite valmis</h2>
+                        <p class="text-sm text-slate-600 mb-5 leading-relaxed">${doneMsg} Aivosi saivat dopamiininsa – nyt voit hyvillä mielin levätä.</p>
+                        <button onclick="startExtraRound()" class="w-full bg-[#2e7d32] hover:bg-[#1b5e20] text-white font-bold py-3.5 px-5 rounded-2xl shadow-sm transition text-sm">
+                            Vielä on virtaa – tee 1–3 lisää 🔄
                         </button>
                     </div>
                 `;
                 return;
             }
 
-            // 2. Jos tämän kerran minitavoite (max 3 tehtävää) on täynnä TAI kaikki jonon kasvit on käyty läpi
-            const sessionDone = sessionCompletedCount >= sessionGoalLimit || queue.length === 0;
-            if (sessionDone) {
-                const remainingCount = getSortedPlants().filter(p => {
-                    const days = Math.max(0, (new Date() - new Date(p.lastCared)) / (1000 * 60 * 60 * 24));
-                    return (days / (p.intervalDays || 7)) >= 0.75;
-                }).length;
-
-                card.innerHTML = `
-                    <div class="py-6 animate-pop">
-                        <div class="text-5xl mb-3">🎉</div>
-                        <h2 class="text-2xl font-extrabold text-[#2e7d32] mb-2">Tämän kerran minitavoite täynnä!</h2>
-                        <p class="text-sm text-slate-600 leading-relaxed mb-4">
-                            Teit juuri <strong>${sessionCompletedCount} ${sessionCompletedCount === 1 ? 'kasvin' : 'kasvin'}</strong> hoitotehtävän – se riittää mainiosti tälle kerralle!
-                            Lepää rauhassa, loput kasvit odottavat myöhemmin.
-                        </p>
-                        ${remainingCount > 0 ? `
-                            <div class="bg-[#f1f8e9] border border-[#dcedc8] rounded-2xl p-3 text-xs text-[#2e7d32] mb-5">
-                                🤖 <strong>Kasvi-AI:</strong> Vielä ${remainingCount} kasvia odottaa vuoroaan myöhemmin, mutta sinun ei tarvitse tehdä niitä nyt.
-                            </div>
-                        ` : ''}
-                        <div class="flex flex-col gap-2.5">
-                            <button onclick="doOneMoreExtraTask()" class="w-full bg-[#e8f5e9] hover:bg-[#c8e6c9] text-[#2e7d32] font-bold py-3 px-5 rounded-2xl transition text-sm">
-                                🌿 Tee halutessasi 1 lisätehtävä
-                            </button>
-                            <button onclick="restartMiniSession()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold py-2.5 px-5 rounded-2xl transition text-xs">
-                                🔄 Aloita uusi 3 kasvin kierros
-                            </button>
-                        </div>
-                    </div>
-                `;
-                stopMusic();
-                return;
-            }
-
-            // Palautetaan kortin rakenne, jos se oli aiemmin korvattu lopetusnäkymällä
+            // Varmistetaan että pääkortin alkuperäinen rakenne on olemassa (jos palataan voittoruudusta)
             if (!document.getElementById('plantName')) {
                 location.reload();
                 return;
             }
 
-            const plant = queue[0]; // Aina jonon kiireellisin kasvi
-
-            // Päivitetään tekstit
+            const plant = sorted[0];
+            document.getElementById('aiReasonText').innerText = buildAiRecommendationReason(plant);
             document.getElementById('plantName').innerText = plant.name;
             document.getElementById('plantTask').innerText = plant.task;
-            document.getElementById('plantCounter').innerText = `Tehtävä ${sessionCompletedCount + 1} / ${sessionGoalLimit}`;
-            document.getElementById('aiReasonText').innerHTML = buildAiPriorityReason(plant);
 
-            // Kiireellisyysmerkki
-            const daysSince = Math.floor((new Date() - new Date(plant.lastCared)) / (1000 * 60 * 60 * 24));
-            const urgencyTag = document.getElementById('urgencyTag');
-            if (daysSince >= plant.intervalDays) {
-                urgencyTag.className = "inline-block bg-[#ffe0b2] text-[#e65100] py-1 px-3 rounded-full text-xs font-bold";
-                urgencyTag.innerText = "🔥 Eniten hoitoa vaativa";
-            } else {
-                urgencyTag.className = "inline-block bg-[#e8f5e9] text-[#2e7d32] py-1 px-3 rounded-full text-xs font-bold";
-                urgencyTag.innerText = `🌿 Hoidettu ${daysSince} pv sitten`;
-            }
+            updatePhotoGentleHint(plant);
 
-            // 1. Renderöidään AIEMMIN-kuva
+            // Renderöidään AIEMMIN-kuva
             const prevContent = document.getElementById('prevPhotoContent');
             const prevDateEl = document.getElementById('prevPhotoDate');
             if (plant.prevPhoto) {
-                prevDateEl.innerText = plant.prevPhotoDate ? formatFinnishDate(plant.prevPhotoDate) : "";
-                prevContent.className = "flex-1 flex items-center justify-center overflow-hidden rounded-lg";
                 prevContent.innerHTML = `
-                    <img src="${plant.prevPhoto}" 
-                         alt="Aiempi kuva: ${plant.name}" 
-                         class="photo-preview-img"
-                         onclick="openLightbox('${plant.prevPhoto}', '${plant.name} – Aiemmin (${formatFinnishDate(plant.prevPhotoDate)})')">
+                    <img src="${plant.prevPhoto}" alt="Aiemmin" onclick="openZoomModal('${plant.prevPhoto}', '${plant.name} – Aiemmin (${plant.prevPhotoDate || ''})')" class="w-full h-24 object-cover rounded-lg cursor-zoom-in shadow-xs hover:opacity-95 transition">
                 `;
+                prevDateEl.innerText = plant.prevPhotoDate ? formatFinnishDate(plant.prevPhotoDate) : 'Tallennettu';
             } else {
-                prevDateEl.innerText = "";
-                prevContent.className = "flex-1 flex flex-col items-center justify-center text-slate-400 text-xs p-2 border border-dashed border-slate-200 rounded-lg bg-slate-50/50";
-                prevContent.innerHTML = `
-                    <span class="text-xl mb-1 opacity-50">🌱</span>
-                    <span>Ei kuvaa vielä</span>
-                `;
+                prevContent.innerHTML = `<span class="text-xs text-slate-400 italic px-1">Ei vielä kuvaa</span>`;
+                prevDateEl.innerText = '';
             }
 
-            // 2. Renderöidään NYT-kuva
+            // Renderöidään NYT-kuva
             renderNowPhotoBox(plant);
         }
 
         function renderNowPhotoBox(plant) {
             const nowContent = document.getElementById('nowPhotoContent');
-            const clearBtn = document.getElementById('clearNowPhotoBtn');
-            const actionsRow = document.getElementById('nowPhotoActions');
+            const nowStatus = document.getElementById('nowPhotoStatus');
 
             if (pendingPhotoDataUrl) {
-                clearBtn.classList.remove('hidden');
-                actionsRow.classList.remove('hidden');
-                nowContent.className = "flex-1 flex items-center justify-center overflow-hidden rounded-lg";
                 nowContent.innerHTML = `
-                    <img src="${pendingPhotoDataUrl}" 
-                         alt="Uusi kuva: ${plant.name}" 
-                         class="photo-preview-img"
-                         onclick="openLightbox('${pendingPhotoDataUrl}', '${plant.name} – Nyt (${formatFinnishDate(getTodayIsoDate())})')">
+                    <div class="relative w-full">
+                        <img src="${pendingPhotoDataUrl}" alt="Nyt" onclick="openZoomModal('${pendingPhotoDataUrl}', '${plant.name} – Tänään')" class="w-full h-24 object-cover rounded-lg cursor-zoom-in shadow-xs">
+                        <button type="button" onclick="clearPendingPhoto()" title="Poista kuva" class="absolute -top-1.5 -right-1.5 bg-slate-800 text-white w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center shadow">✕</button>
+                    </div>
                 `;
+                nowStatus.innerHTML = `<button type="button" onclick="openPhotoSourceModal()" class="text-[#2e7d32] font-bold underline">Vaihda kuva</button>`;
             } else {
-                clearBtn.classList.add('hidden');
-                actionsRow.classList.add('hidden');
-                hideAiPraise();
-                nowContent.className = "flex-1 flex flex-col items-center justify-center text-xs p-2 border border-dashed border-[#a5d6a7] rounded-lg bg-[#f1f8e9]/40";
                 nowContent.innerHTML = `
-                    <button onclick="triggerPhotoInput()" class="w-full h-full flex flex-col items-center justify-center gap-1.5 text-[#2e7d32] hover:text-[#1b5e20] font-semibold py-2">
-                        <span class="text-2xl">📸</span>
-                        <span>Ota / Lataa kuva</span>
+                    <button type="button" onclick="openPhotoSourceModal()" class="bg-[#e8f5e9] hover:bg-[#c8e6c9] active:scale-95 text-[#1b5e20] font-bold text-xs py-2.5 px-3 rounded-xl transition shadow-xs flex flex-col items-center gap-1">
+                        <span class="text-lg">📸</span>
+                        <span>Ota tai valitse kuva</span>
                     </button>
                 `;
+                nowStatus.innerText = 'Valinnainen';
             }
         }
 
-        function doOneMoreExtraTask() {
-            sessionGoalLimit = sessionCompletedCount + 1;
-            sessionSkippedIds.clear();
-            location.reload();
+        // --- 4. KAMERA & GOOGLE KUVAT / GALLERIA -VALINTA ---
+        function openPhotoSourceModal() {
+            document.getElementById('photoSourceModal').classList.remove('hidden');
         }
 
-        function restartMiniSession() {
-            sessionCompletedCount = 0;
-            sessionGoalLimit = MAX_SESSION_TASKS;
-            sessionSkippedIds.clear();
+        function closePhotoSourceModal(event) {
+            if (!event || event.target.id === 'photoSourceModal') {
+                document.getElementById('photoSourceModal').classList.add('hidden');
+            }
+        }
+
+        function triggerCameraCapture() {
+            closePhotoSourceModal();
+            const cameraInput = document.getElementById('cameraInput');
+            cameraInput.value = '';
+            cameraInput.click();
+        }
+
+        function triggerGallerySelect() {
+            closePhotoSourceModal();
+            const galleryInput = document.getElementById('galleryInput');
+            galleryInput.value = '';
+            galleryInput.click();
+        }
+
+        function clearPendingPhoto() {
             pendingPhotoDataUrl = null;
-            location.reload();
+            pendingPhotoMetrics = null;
+            hideAiPraise();
+            const sorted = getSortedPlants().filter(p => !sessionSkippedIds.has(p.id));
+            if (sorted[0]) renderNowPhotoBox(sorted[0]);
         }
 
-        // --- KUVAN OTTAMINEN JA LATAAMINEN (PÄÄKORTTI) ---
-        function triggerPhotoInput() {
-            const input = document.getElementById('photoInput');
-            input.value = ""; // Nollataan, jotta saman kuvan voi valita uudelleen tarvittaessa
-            input.click();
-        }
-
-        async function handleImageSelected(event) {
-            const file = event.target.files[0];
+        function handleImageSelected(event) {
+            const file = event.target.files && event.target.files[0];
             if (!file) return;
 
-            try {
-                showToast("⏳ Kasvi-AI tutkii kuvaa...");
-                const compressed = await compressImage(file, 600, 0.75);
-                pendingPhotoDataUrl = compressed;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    // Pakataan kuva automaattisesti sopivaan kokoon (max 640px), jotta localStorage kestää
+                    const maxDim = 640;
+                    let width = img.width;
+                    let height = img.height;
 
-                const queue = getSessionQueue();
-                const currentPlant = queue[0];
-                if (currentPlant) {
-                    renderNowPhotoBox(currentPlant);
-                    const praiseMsg = await generateAiPhotoPraise(
-                        currentPlant.name,
-                        currentPlant.prevPhoto,
-                        compressed
-                    );
-                    showAiPraise(praiseMsg);
+                    if (width > maxDim || height > maxDim) {
+                        if (width > height) {
+                            height = Math.round((height * maxDim) / width);
+                            width = maxDim;
+                        } else {
+                            width = Math.round((width * maxDim) / height);
+                            height = maxDim;
+                        }
+                    }
+
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // Lasketaan kuvan väri- ja kirkkausmetriikat AI-analyysiä varten
+                    const metrics = analyzeImageMetrics(ctx, width, height);
+                    const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.78);
+
+                    pendingPhotoDataUrl = compressedDataUrl;
+                    pendingPhotoMetrics = metrics;
+
+                    const sorted = getSortedPlants().filter(p => !sessionSkippedIds.has(p.id));
+                    if (sorted[0]) {
+                        renderNowPhotoBox(sorted[0]);
+                        runAiPhotoComparison(sorted[0], metrics);
+                    }
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // --- 5. AI-KUVA-ANALYYSI JA LÄMPIMÄT KEHUT ---
+        function analyzeImageMetrics(ctx, width, height) {
+            const data = ctx.getImageData(0, 0, width, height).data;
+            let totalBrightness = 0;
+            let greenDominanceSum = 0;
+            let greenPixels = 0;
+            let brightnessSqSum = 0;
+            const pixelCount = data.length / 4;
+
+            for (let i = 0; i < data.length; i += 4) {
+                const r = data[i];
+                const g = data[i + 1];
+                const b = data[i + 2];
+
+                const brightness = (r + g + b) / 3;
+                totalBrightness += brightness;
+                brightnessSqSum += brightness * brightness;
+
+                const greenExcess = g - ((r + b) / 2);
+                if (greenExcess > 8) {
+                    greenPixels++;
+                    greenDominanceSum += greenExcess;
                 }
-                showToast("✨ Kuva analysoitu! Katso Kasvi-AI:n havainto.");
-            } catch (err) {
-                console.error(err);
-                showToast("⚠️ Kuvan käsittely epäonnistui.", "warning");
             }
+
+            const avgBrightness = totalBrightness / pixelCount;
+            const variance = Math.max(0, (brightnessSqSum / pixelCount) - (avgBrightness * avgBrightness));
+            const contrast = Math.sqrt(variance);
+            const greenCoverage = (greenPixels / pixelCount) * 100;
+            const greenIntensity = greenPixels > 0 ? greenDominanceSum / greenPixels : 0;
+
+            return {
+                avgBrightness,
+                contrast,
+                greenCoverage,
+                greenIntensity
+            };
         }
 
-        function clearCurrentPhoto() {
-            pendingPhotoDataUrl = null;
-            hideAiPraise();
-            const queue = getSessionQueue();
-            if (queue[0]) {
-                renderNowPhotoBox(queue[0]);
+        function runAiPhotoComparison(plant, newMetrics) {
+            const praiseBox = document.getElementById('aiPraiseBox');
+            const praiseTitle = document.getElementById('aiPraiseTitle');
+            const praiseText = document.getElementById('aiPraiseText');
+
+            if (!plant.prevMetrics) {
+                praiseTitle.innerText = "Mahtava aloituskuva tallennettu! 🌱";
+                praiseText.innerText = `Tämä kuva toimii nyt ${plant.name}-kasvisi vertailukohtana. Kun otat tai valitset uuden kuvan muutaman viikon päästä, etsin siitä pieniäkin kasvun merkkejä puolestasi!`;
+                praiseBox.classList.remove('hidden');
+                return;
             }
+
+            const old = plant.prevMetrics;
+            const greenDiff = newMetrics.greenCoverage - old.greenCoverage;
+            const intensityDiff = newMetrics.greenIntensity - old.greenIntensity;
+            const contrastDiff = newMetrics.contrast - old.contrast;
+            const brightnessDiff = newMetrics.avgBrightness - old.avgBrightness;
+
+            let observations = [];
+
+            if (greenDiff > 1.8) {
+                observations.push(`vihreän lehvästön pinta-ala kuvassa on kasvanut noin ${greenDiff.toFixed(1)} prosenttiyksikköä – uutta kasvua tai tuuheutumista on selvästi tapahtunut`);
+            }
+            if (intensityDiff > 1.5) {
+                observations.push(`lehtien vihreä sävy on syventynyt ja raikastunut, mikä kertoo hyvästä nestetasapainosta`);
+            }
+            if (contrastDiff > 2.5) {
+                observations.push(`lehtien muodot ja varjot erottuvat entistä ryhdikkäämmin`);
+            }
+            if (brightnessDiff > 6) {
+                observations.push(`kasvi saa nyt mukavasti valoa ja yleisilme on kirkastunut`);
+            }
+
+            if (observations.length === 0) {
+                observations.push(`kasvisi lehtivihreä ja ryhti ovat pysyneet tasaisen elinvoimaisina – tasainen huolenpitosi pitää sen selvästi tyytyväisenä`);
+            }
+
+            praiseTitle.innerText = "✨ Kasvi-AI huomasi hienoja merkkejä!";
+            praiseText.innerText = `Hienoa työtä! Huomasin kuvasta, että ${observations.slice(0, 2).join(', ja ')}. Juuri tällaiset pienet muutokset jäävät arjessa helposti huomaamatta!`;
+            praiseBox.classList.remove('hidden');
         }
 
-        // Tallenna "Nyt"-kuva heti "Aiemmin"-kuvaksi merkitsemättä kasvia kastelluksi
-        function savePhotoNow() {
-            if (!pendingPhotoDataUrl) return;
-            const queue = getSessionQueue();
-            const currentPlant = queue[0];
+        function hideAiPraise() {
+            const praiseBox = document.getElementById('aiPraiseBox');
+            if (praiseBox) praiseBox.classList.add('hidden');
+        }
+
+        // --- 6. TEHTÄVÄN KUITTAUS & OHITUS ---
+        function completeTask() {
+            const sorted = getSortedPlants().filter(p => !sessionSkippedIds.has(p.id));
+            const currentPlant = sorted[0];
             if (!currentPlant) return;
 
-            const originalPlant = plants.find(p => p.id === currentPlant.id);
-            if (originalPlant) {
-                originalPlant.prevPhoto = pendingPhotoDataUrl;
-                originalPlant.prevPhotoDate = getTodayIsoDate();
-                savePlantsToStorage();
-                pendingPhotoDataUrl = null;
-                hideAiPraise();
-                renderCurrentPlant();
-                showToast("💾 Kuva tallennettu kasvin kasvuhistoriaan!");
-            }
-        }
+            const todayStr = new Date().toISOString().split('T')[0];
+            const target = plants.find(p => p.id === currentPlant.id);
 
-        // --- TEHTÄVÄN SUORITUS JA OHITUS ---
-        function completeTask() {
-            const queue = getSessionQueue();
-            const plant = queue[0];
-            if (!plant) return;
-
-            const originalPlant = plants.find(p => p.id === plant.id);
-            if (originalPlant) {
-                // Päivitä hoitopäivämäärä tähän päivään
-                originalPlant.lastCared = getTodayIsoDate();
-
-                // Jos käyttäjä otti/latasi uuden kuvan "Nyt"-ruutuun, siirretään se uudeksi "Aiemmin"-kuvaksi!
+            if (target) {
+                target.lastCared = todayStr;
+                // Jos käyttäjä lisäsi vapaaehtoisen kuvan, päivitetään se uudeksi "Aiemmin"-kuvaksi
                 if (pendingPhotoDataUrl) {
-                    originalPlant.prevPhoto = pendingPhotoDataUrl;
-                    originalPlant.prevPhotoDate = getTodayIsoDate();
-                    pendingPhotoDataUrl = null;
+                    target.prevPhoto = pendingPhotoDataUrl;
+                    target.prevPhotoDate = todayStr;
+                    target.prevMetrics = pendingPhotoMetrics;
                 }
-
                 savePlantsToStorage();
             }
 
             sessionCompletedCount++;
+            pendingPhotoDataUrl = null;
+            pendingPhotoMetrics = null;
             hideAiPraise();
 
-            // Dopamiinipalkinto: konfetti ja kannustava viesti
-            triggerDopamineCelebration();
-            showToast(`🌿 Hienoa! ${plant.name} hoidettu (${sessionCompletedCount}/${sessionGoalLimit})!`);
+            showToast(sessionCompletedCount >= SESSION_GOAL_LIMIT
+                ? "🎉 Minitavoite täynnä! Mahtavaa työtä!"
+                : `🌿 ${currentPlant.name} hoidettu! (${sessionCompletedCount}/${SESSION_GOAL_LIMIT})`);
 
             renderCurrentPlant();
         }
 
         function skipTask() {
-            const queue = getSessionQueue();
-            if (queue[0]) {
-                sessionSkippedIds.add(queue[0].id);
+            const sorted = getSortedPlants().filter(p => !sessionSkippedIds.has(p.id));
+            if (sorted[0]) {
+                sessionSkippedIds.add(sorted[0].id);
             }
             pendingPhotoDataUrl = null;
+            pendingPhotoMetrics = null;
             hideAiPraise();
             renderCurrentPlant();
         }
 
-        function skipTask() {
-            pendingPhotoDataUrl = null;
-            currentPlantIndex++;
-            renderCurrentPlant();
+        function startExtraRound() {
+            sessionCompletedCount = 0;
+            sessionSkippedIds.clear();
+            location.reload();
         }
 
-        function triggerDopamineCelebration() {
-            if (typeof confetti === 'function') {
-                confetti({
-                    particleCount: 45,
-                    spread: 60,
-                    origin: { y: 0.7 },
-                    colors: ['#2e7d32', '#4caf50', '#81c784', '#f39c12']
-                });
-            }
-        }
-
-        // --- FOKUSMUSIIKKI & 5 MIN AJASTIN ---
+        // --- 7. FOKUS-AJASTIN & TAUSTAMUSIIKKI ---
         function toggleMusic() {
             const audio = document.getElementById('focusAudio');
             const btn = document.getElementById('musicBtn');
             const timerDisplay = document.getElementById('timerDisplay');
 
             if (audio.paused) {
-                audio.play().catch(() => {
-                    showToast("🎵 Musiikin toisto alkoi (tarkista laitteen äänet).");
-                });
-                btn.innerHTML = `<span>⏸️</span> <span>Pysäytä Fokus</span>`;
-                btn.classList.replace('bg-[#2e7d32]', 'bg-slate-700');
+                audio.play().catch(() => {});
+                btn.innerHTML = `<span>⏸️</span> <span>Pysäytä fokus</span>`;
                 timerDisplay.classList.remove('hidden');
                 startTimer();
             } else {
@@ -937,17 +695,15 @@
 
         function startTimer() {
             clearInterval(timerInterval);
-            secondsLeft = 300; // 5 min
+            secondsLeft = 300;
             updateTimerDisplay();
 
             timerInterval = setInterval(() => {
                 secondsLeft--;
                 updateTimerDisplay();
-
                 if (secondsLeft <= 0) {
                     stopMusic();
-                    triggerDopamineCelebration();
-                    showToast("⏱️ 5 min fokus-aika päättyi! Loistavaa työtä!");
+                    showToast("⏱️ 5 minuutin fokus-hetki päättyi! Loistavaa työtä!");
                 }
             }, 1000);
         }
@@ -957,51 +713,40 @@
             const btn = document.getElementById('musicBtn');
             const timerDisplay = document.getElementById('timerDisplay');
 
-            audio.pause();
+            if (audio) audio.pause();
             clearInterval(timerInterval);
-            btn.innerHTML = `<span>🎵</span> <span>Aloita Fokus (5min)</span>`;
-            btn.classList.replace('bg-slate-700', 'bg-[#2e7d32]');
-            timerDisplay.classList.add('hidden');
+            if (btn) btn.innerHTML = `<span>🎵</span> <span>Fokus (5 min)</span>`;
+            if (timerDisplay) timerDisplay.classList.add('hidden');
         }
 
         function updateTimerDisplay() {
             const mins = Math.floor(secondsLeft / 60);
             const secs = secondsLeft % 60;
-            document.getElementById('timeRemaining').innerText =
-                `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-        }
-
-        // --- UUDEN KASVIN LISÄÄMINEN (MODAALI) ---
-        function openAddPlantModal() {
-            document.getElementById('addPlantForm').reset();
-            clearNewPlantImage();
-            document.getElementById('addPlantModal').classList.remove('hidden');
-        }
-
-        function closeAddPlantModal() {
-            document.getElementById('addPlantModal').classList.add('hidden');
-        }
-
-        async function handleNewPlantImage(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            try {
-                const compressed = await compressImage(file, 600, 0.75);
-                newPlantPhotoDataUrl = compressed;
-                document.getElementById('newPlantPreviewImg').src = compressed;
-                document.getElementById('newPlantPreviewContainer').classList.remove('hidden');
-                document.getElementById('newPlantPhotoStatus').innerText = "Kuva valmiina!";
-            } catch (err) {
-                showToast("⚠️ Kuvan valinta epäonnistui.", "warning");
+            const el = document.getElementById('timeRemaining');
+            if (el) {
+                el.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
             }
         }
 
-        function clearNewPlantImage() {
-            newPlantPhotoDataUrl = null;
-            document.getElementById('newPlantPhotoInput').value = "";
-            document.getElementById('newPlantPreviewContainer').classList.add('hidden');
-            document.getElementById('newPlantPhotoStatus').innerText = "Ei kuvaa valittuna";
+        // --- 8. OMIEN KASVIEN HALLINTA & MODAALIT ---
+        function openZoomModal(src, caption) {
+            document.getElementById('zoomedImg').src = src;
+            document.getElementById('zoomCaption').innerText = caption;
+            document.getElementById('zoomModal').classList.remove('hidden');
+        }
+
+        function closeZoomModal() {
+            document.getElementById('zoomModal').classList.add('hidden');
+        }
+
+        function openAddPlantModal() {
+            document.getElementById('addPlantModal').classList.remove('hidden');
+        }
+
+        function closeAddPlantModal(event) {
+            if (!event || event.target.id === 'addPlantModal') {
+                document.getElementById('addPlantModal').classList.add('hidden');
+            }
         }
 
         function saveNewPlant(event) {
@@ -1012,133 +757,102 @@
 
             if (!name || !task) return;
 
-            // Asetetaan lastCared siten, että uusi kasvi nousee heti hoidettavaksi tai järjestykseen
-            const yesterday = new Date();
-            yesterday.setDate(yesterday.getDate() - intervalDays);
-
             const newPlant = {
                 id: Date.now(),
-                name: name,
-                task: task,
-                intervalDays: intervalDays,
-                lastCared: yesterday.toISOString().split('T')[0],
-                prevPhoto: newPlantPhotoDataUrl || null,
-                prevPhotoDate: newPlantPhotoDataUrl ? getTodayIsoDate() : null
+                name,
+                task,
+                intervalDays,
+                lastCared: getDaysAgoISO(intervalDays), // Tuodaan heti hoidettavaksi
+                prevPhoto: null,
+                prevPhotoDate: null,
+                prevMetrics: null
             };
 
             plants.push(newPlant);
             savePlantsToStorage();
-            closeAddPlantModal();
-            sessionSkippedIds.clear();
-            pendingPhotoDataUrl = null;
-            renderCurrentPlant();
-            showToast(`🌱 ${name} lisätty kasvilistalle!`);
-        }
 
-        // --- KASVIEN HALLINTA (MODAALI) ---
-        function updateTotalPlantsCount() {
-            const el = document.getElementById('totalPlantsCount');
-            if (el) el.innerText = plants.length;
+            document.getElementById('newPlantName').value = '';
+            document.getElementById('newPlantTask').value = '';
+            closeAddPlantModal();
+            showToast(`🌱 ${name} lisätty kasvilistaan!`);
+            renderCurrentPlant();
         }
 
         function openManagePlantsModal() {
-            renderManagePlantsList();
+            const container = document.getElementById('plantsListContainer');
+            container.innerHTML = '';
+
+            if (plants.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">Ei vielä tallennettuja kasveja.</p>`;
+            } else {
+                plants.forEach(p => {
+                    const row = document.createElement('div');
+                    row.className = "flex items-center justify-between bg-slate-50 p-2.5 rounded-xl border border-slate-200";
+                    row.innerHTML = `
+                        <div class="flex items-center gap-2.5 overflow-hidden">
+                            ${p.prevPhoto
+                                ? `<img src="${p.prevPhoto}" class="w-10 h-10 rounded-lg object-cover shrink-0">`
+                                : `<div class="w-10 h-10 rounded-lg bg-[#e8f5e9] text-[#2e7d32] flex items-center justify-center font-bold shrink-0">🌿</div>`
+                            }
+                            <div class="truncate">
+                                <div class="text-xs font-bold text-slate-800 truncate">${p.name}</div>
+                                <div class="text-[11px] text-slate-500">Väli: ${p.intervalDays} pv • Hoidettu: ${formatFinnishDate(p.lastCared)}</div>
+                            </div>
+                        </div>
+                        <button onclick="deletePlant(${p.id})" class="text-xs text-red-500 hover:bg-red-50 px-2.5 py-1.5 rounded-lg font-bold shrink-0">Poista</button>
+                    `;
+                    container.appendChild(row);
+                });
+            }
+
             document.getElementById('managePlantsModal').classList.remove('hidden');
         }
 
-        function closeManagePlantsModal() {
-            document.getElementById('managePlantsModal').classList.add('hidden');
-        }
-
-        function renderManagePlantsList() {
-            const container = document.getElementById('plantsListContainer');
-            if (plants.length === 0) {
-                container.innerHTML = `<p class="text-sm text-slate-500 text-center py-6">Ei tallennettuja kasveja.</p>`;
-                return;
+        function closeManagePlantsModal(event) {
+            if (!event || event.target.id === 'managePlantsModal') {
+                document.getElementById('managePlantsModal').classList.add('hidden');
             }
-
-            container.innerHTML = plants.map(plant => `
-                <div class="flex items-center justify-between bg-slate-50 border border-slate-200 p-3 rounded-2xl">
-                    <div class="flex items-center gap-3 overflow-hidden">
-                        ${plant.prevPhoto 
-                            ? `<img src="${plant.prevPhoto}" alt="${plant.name}" class="w-12 h-12 rounded-xl object-cover shrink-0 border border-slate-200">`
-                            : `<div class="w-12 h-12 rounded-xl bg-[#e8f5e9] text-[#2e7d32] flex items-center justify-center text-xl shrink-0">🌿</div>`
-                        }
-                        <div class="truncate">
-                            <div class="font-bold text-sm text-slate-800 truncate">${plant.name}</div>
-                            <div class="text-xs text-slate-500 truncate">${plant.task}</div>
-                            <div class="text-[11px] text-[#2e7d32] font-medium">Väli: ${plant.intervalDays} pv • Hoidettu: ${formatFinnishDate(plant.lastCared)}</div>
-                        </div>
-                    </div>
-                    <button onclick="deletePlant(${plant.id})" class="ml-2 bg-red-50 hover:bg-red-100 text-red-600 p-2 rounded-xl text-xs font-bold shrink-0 transition" title="Poista kasvi">
-                        🗑️
-                    </button>
-                </div>
-            `).join('');
         }
 
         function deletePlant(id) {
             plants = plants.filter(p => p.id !== id);
             savePlantsToStorage();
-            renderManagePlantsList();
-            sessionSkippedIds.delete(id);
-            pendingPhotoDataUrl = null;
+            openManagePlantsModal();
             renderCurrentPlant();
-            showToast("🗑️ Kasvi poistettu.");
         }
 
-        // --- ESIMERKKIKASVIEN PALAUTUS ---
-        function confirmRestoreSamples() {
-            showConfirmModal(
-                "Palauta esimerkkikasvit?",
-                "Tämä korvaa nykyisen kasvilistan esimerkkikasveilla.",
-                () => {
-                    plants = getInitialSamplePlants();
-                    savePlantsToStorage();
-                    sessionCompletedCount = 0;
-                    sessionGoalLimit = MAX_SESSION_TASKS;
-                    sessionSkippedIds.clear();
-                    pendingPhotoDataUrl = null;
-                    renderCurrentPlant();
-                    showToast("🔄 Esimerkkikasvit palautettu!");
-                }
-            );
+        function resetSamplePlants() {
+            plants = JSON.parse(JSON.stringify(defaultPlants));
+            sessionCompletedCount = 0;
+            sessionSkippedIds.clear();
+            pendingPhotoDataUrl = null;
+            pendingPhotoMetrics = null;
+            savePlantsToStorage();
+            closeManagePlantsModal();
+            showToast("🌿 Esimerkkikasvit palautettu!");
+            renderCurrentPlant();
         }
 
-        // --- VAHVISTUSMODAALI ---
-        let confirmCallback = null;
-
-        function showConfirmModal(title, message, onConfirm) {
-            document.getElementById('confirmTitle').innerText = title;
-            document.getElementById('confirmMessage').innerText = message;
-            confirmCallback = onConfirm;
-            document.getElementById('confirmModal').classList.remove('hidden');
+        // --- 9. APUFUNKTIOT ---
+        function formatFinnishDate(isoStr) {
+            if (!isoStr) return '';
+            const parts = isoStr.split('-');
+            if (parts.length !== 3) return isoStr;
+            return `${parseInt(parts[2], 10)}.${parseInt(parts[1], 10)}.${parts[0]}`;
         }
 
-        function closeConfirmModal() {
-            document.getElementById('confirmModal').classList.add('hidden');
-            confirmCallback = null;
+        let toastTimeout = null;
+        function showToast(msg) {
+            const toast = document.getElementById('toastBanner');
+            toast.innerText = msg;
+            toast.classList.remove('hidden');
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3200);
         }
 
-        document.getElementById('confirmActionBtn').addEventListener('click', () => {
-            if (typeof confirmCallback === 'function') {
-                confirmCallback();
-            }
-            closeConfirmModal();
-        });
-
-        // --- KUVAN SUURENNUS (LIGHTBOX) ---
-        function openLightbox(imgSrc, caption) {
-            document.getElementById('lightboxImg').src = imgSrc;
-            document.getElementById('lightboxCaption').innerText = caption;
-            document.getElementById('imageLightboxModal').classList.remove('hidden');
-        }
-
-        function closeLightbox() {
-            document.getElementById('imageLightboxModal').classList.add('hidden');
-        }
-
-        // --- SOVELLUKSEN KÄYNNISTYS ---
+        // Käynnistys
         renderCurrentPlant();
     </script>
 </body>
